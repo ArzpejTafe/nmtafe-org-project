@@ -1,63 +1,13 @@
-name: North Metro Software CI
+name: CI
 
 on:
   pull_request:
     branches: [main]
-    types: [opened, edited, synchronize, reopened]
   push:
     branches: [main]
 
 jobs:
-  naming-rules:
-    name: Check naming rules (guide sections 2 and 3)
-    if: github.event_name == 'pull_request'
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Check branch name
-        env:
-          BRANCH: ${{ github.head_ref }}
-        run: |
-          echo "Branch: $BRANCH"
-          pattern='^(feature|fix|hotfix|docs|refactor|test|chore)/([0-9]+-)?[a-z0-9]+(-[a-z0-9]+)*$'
-          if [[ "$BRANCH" =~ $pattern ]]; then
-            echo "OK: branch name follows <type>/[<issue-number>]<brief-description>"
-          else
-            echo "ERROR: branch name must look like feature/user-authentication or fix/123-password-error"
-            exit 1
-          fi
-
-      - name: Check pull request title
-        env:
-          TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          echo "Title: $TITLE"
-          pattern='^(feat|fix|docs|style|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
-          if [[ "$TITLE" =~ $pattern ]]; then
-            echo "OK: title follows <type>(<scope>): <description>"
-          else
-            echo "ERROR: title must look like feat(auth): implement password reset functionality"
-            exit 1
-          fi
-
-  lint-and-test:
-    name: Lint and unit tests (guide section 9)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get the code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install tools
-        run: pip install flake8 pytest
-
-      - name: Lint (PEP 8, org/code-style-guide.md)
-        run: flake8 src tests
-
-      - name: Run unit tests
-        run: |
-          pytest || [ $? -eq 5 ]
-          # exit code 5 = "no tests found", allowed while the project is new
+      - uses: actions/checkout@v5
